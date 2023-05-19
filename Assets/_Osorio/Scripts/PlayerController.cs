@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
     [Header("Idle Breaker")] 
     [SerializeField] private float timeToBreakIdle = 10f;
     private float idleBreakerTimer = 0f;
+    private bool idleBreaking;
     
     [Header("Animator")]
     [SerializeField] private Animator animator;
@@ -43,6 +44,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float chainAttackTime = 1;
     private float chainAttackTimer = 0;
 
+    private float stopAttackTimer;
+    private float stopAttackTime = 2f;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -54,6 +58,7 @@ public class PlayerController : MonoBehaviour
         readyToHurt = true;
         attackStarted = false;
         inputActions.Player.Attack.performed += AttackPressed;
+        idleBreaking = false;
     }
 
     private void Update()
@@ -63,6 +68,7 @@ public class PlayerController : MonoBehaviour
             default:
             case States.idle: HandleIdle(); HandleTriggers(); break;
             case States.moving: HandleMovement(); HandleTriggers(); break;
+            case States.attacking_1: HandleTriggers(); break;
         }
 
         chainAttackTimer -= Time.deltaTime;
@@ -83,6 +89,12 @@ public class PlayerController : MonoBehaviour
         Vector2 movementInput = inputActions.Player.Movement.ReadValue<Vector2>();
         animator.SetFloat("Velocity", 0);
         if (movementInput != Vector2.zero) currentState = States.moving;
+        if (idleBreakerTimer >= timeToBreakIdle)
+        {
+            if (!idleBreaking) { animator.SetTrigger("IdleBreaker"); idleBreaking = true; }
+            if (idleBreakerTimer >= timeToBreakIdle+2f) { idleBreakerTimer = 0; idleBreaking = false; }
+        }
+        idleBreakerTimer += Time.deltaTime;
     }    
     private void HandleMovement()
     {
@@ -171,6 +183,4 @@ public class PlayerController : MonoBehaviour
     {
         if (!attackStarted) attackStarted = true;
     }
-
-
 }
