@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
+using System.Collections;
 
 public class Sofia_IKSnapper : MonoBehaviour
 {
@@ -7,6 +8,10 @@ public class Sofia_IKSnapper : MonoBehaviour
     [SerializeField] private MultiParentConstraint[] animatedBones;
     [SerializeField] private MultiParentConstraint[] proceduralBones;
 
+    [SerializeField] private AnimationCurve activationAnimation;
+    [SerializeField] private AnimationCurve deactivationAnimation;
+
+    private bool currentOverride;
     private void UpdateInfluence(float weight)
     {
         if (animatedBones == null) return;
@@ -25,9 +30,31 @@ public class Sofia_IKSnapper : MonoBehaviour
             proceduralConstraint.weight = 1 - weight;
         }
     }
-    
+
     private void OnValidate()
     {
         UpdateInfluence(proceduralInfluence);
+    }
+    
+    public void OverrideIK(bool state)
+    {
+        if (state != currentOverride)
+        {
+            currentOverride = state;
+            StartCoroutine(AnimateInfluence());
+        }
+    }
+    IEnumerator AnimateInfluence()
+    {
+        //actualizacion las influencias
+
+        AnimationCurve curve = currentOverride? activationAnimation : deactivationAnimation;
+        for (float time = 0; time < 1f; time += Time.deltaTime)
+        {
+            proceduralInfluence = curve.Evaluate(time);
+            UpdateInfluence(proceduralInfluence);
+
+            yield return null;
+        }
     }
 }
