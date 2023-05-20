@@ -69,6 +69,8 @@ public class PlayerController : MonoBehaviour
             case States.idle: HandleIdle(); HandleTriggers(); break;
             case States.moving: HandleMovement(); HandleTriggers(); break;
             case States.attacking_1: HandleTriggers(); break;
+            case States.attacking_2: HandleTriggers(); break;
+            case States.attacking_3: HandleTriggers(); break;
         }
 
         chainAttackTimer -= Time.deltaTime;
@@ -98,6 +100,7 @@ public class PlayerController : MonoBehaviour
     }    
     private void HandleMovement()
     {
+        idleBreakerTimer = 0;
         Vector2 movementInput = inputActions.Player.Movement.ReadValue<Vector2>();
         moveDirection = orientation.forward * movementInput.y + orientation.right * movementInput.x;
         float speed = moveSpeed;
